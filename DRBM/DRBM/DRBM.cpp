@@ -63,10 +63,10 @@ double DRBM::muJK(int hindex, int yindex)
 	return value;
 }
 
-Eigen::MatrixXf DRBM::muJKMatrix()
+Eigen::MatrixXd DRBM::muJKMatrix()
 {
 	// XXX: Yノードに値が適切にセットされている必要がある
-	Eigen::MatrixXf mujk(this->hSize, this->ySize);
+	Eigen::MatrixXd mujk(this->hSize, this->ySize);
 	for (int j = 0; j < this->hSize; j++) {
 		for (int k = 0; k < this->ySize; k++) {
 			mujk(j, k) = this->muJK(j, k);
@@ -99,6 +99,21 @@ double DRBM::condProbY(int yindex, double z)
 	return value;
 }
 
+int DRBM::maxCondProbYIndex()
+{
+	std::vector<double> probs(this->ySize);
+	auto z_k = this->normalizeConstantDiv2H();
+	for (int k = 0; k < this->ySize; k++) {
+		probs[k] = condProbY(k, z_k);
+	}
+
+	auto max_itr = std::max_element(probs.begin(), probs.end());
+	auto index = std::distance(probs.begin(), max_itr);
+
+	return index;
+
+}
+
 double DRBM::expectedValueXH(int xindex, int hindex)
 {
 	auto z = this->normalizeConstantDiv2H();
@@ -114,7 +129,7 @@ double DRBM::expectedValueXH(int xindex, int hindex, double z)
 	return value;
 }
 
-double DRBM::expectedValueXH(int xindex, int hindex, double z, Eigen::MatrixXf & mujk)
+double DRBM::expectedValueXH(int xindex, int hindex, double z, Eigen::MatrixXd & mujk)
 {
 	auto value = this->nodeX(xindex) * this->expectedValueH(hindex, z, mujk);
 
@@ -150,7 +165,7 @@ double DRBM::expectedValueH(int hindex, double z)
 	return value;
 }
 
-double DRBM::expectedValueH(int hindex, double z, Eigen::MatrixXf & mujk)
+double DRBM::expectedValueH(int hindex, double z, Eigen::MatrixXd & mujk)
 {
 	std::vector<int> lindex(this->hSize);
 	std::iota(lindex.begin(), lindex.end(), 0);
@@ -197,7 +212,7 @@ double DRBM::expectedValueHY(int hindex, int yindex, double z)
 	return value;
 }
 
-double DRBM::expectedValueHY(int hindex, int yindex, double z, Eigen::MatrixXf & mujk)
+double DRBM::expectedValueHY(int hindex, int yindex, double z, Eigen::MatrixXd & mujk)
 {
 	std::vector<int> lindex(this->hSize);
 	std::iota(lindex.begin(), lindex.end(), 0);
@@ -236,7 +251,7 @@ double DRBM::expectedValueY(int yindex, double z)
 	return value;
 }
 
-double DRBM::expectedValueY(int yindex, double z, Eigen::MatrixXf & mujk)
+double DRBM::expectedValueY(int yindex, double z, Eigen::MatrixXd & mujk)
 {
 	auto value = exp(this->biasD(yindex));
 	for (int j = 0; j < this->hSize; j++) {

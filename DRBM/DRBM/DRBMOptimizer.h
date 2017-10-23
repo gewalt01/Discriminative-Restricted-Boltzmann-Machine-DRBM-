@@ -6,10 +6,10 @@ class DRBM;
 class DRBMOptimizer
 {
 	struct moment {
-		Eigen::VectorXf biasC;
-		Eigen::VectorXf biasD;
-		Eigen::MatrixXf weightXH;
-		Eigen::MatrixXf weightHY;
+		Eigen::VectorXd biasC;
+		Eigen::VectorXd biasD;
+		Eigen::MatrixXd weightXH;
+		Eigen::MatrixXd weightHY;
 	};
 public:
 	double alpha = 0.001;

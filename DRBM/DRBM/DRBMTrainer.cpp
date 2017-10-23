@@ -22,7 +22,7 @@ DRBMTrainer::~DRBMTrainer()
 {
 }
 
-void DRBMTrainer::train(DRBM & drbm, Eigen::VectorXf & data, int label)
+void DRBMTrainer::train(DRBM & drbm, Eigen::VectorXd & data, int label)
 {
 	// Online Learning(SGD)
 	drbm.nodeX = data;
@@ -88,7 +88,7 @@ void DRBMTrainer::train(DRBM & drbm, Eigen::VectorXf & data, int label)
 
 }
 
-double DRBMTrainer::dataMeanXH(DRBM & drbm, Eigen::VectorXf & data, int label, int xindex, int hindex)
+double DRBMTrainer::dataMeanXH(DRBM & drbm, Eigen::VectorXd & data, int label, int xindex, int hindex)
 {
 	//// FIXME: muの計算使いまわしできそうだけど…
 	//auto mu = drbm.biasC(hindex) + drbm.weightHY(hindex, label);
@@ -99,7 +99,7 @@ double DRBMTrainer::dataMeanXH(DRBM & drbm, Eigen::VectorXf & data, int label, i
 	//return value;
 }
 
-double DRBMTrainer::dataMeanXH(DRBM & drbm, Eigen::VectorXf & data, int label, int xindex, int hindex, Eigen::MatrixXf & mujk)
+double DRBMTrainer::dataMeanXH(DRBM & drbm, Eigen::VectorXd & data, int label, int xindex, int hindex, Eigen::MatrixXd & mujk)
 {
 	// FIXME: muの計算使いまわしできそうだけど…
 	//auto mu = drbm.biasC(hindex) + drbm.weightHY(hindex, label);
@@ -110,7 +110,7 @@ double DRBMTrainer::dataMeanXH(DRBM & drbm, Eigen::VectorXf & data, int label, i
 	return value;
 }
 
-double DRBMTrainer::dataMeanH(DRBM & drbm, Eigen::VectorXf & data, int label, int hindex)
+double DRBMTrainer::dataMeanH(DRBM & drbm, Eigen::VectorXd & data, int label, int hindex)
 {
 	//// FIXME: muの計算使いまわしできそうだけど…
 	//auto mu = drbm.biasC(hindex) + drbm.weightHY(hindex, label);
@@ -121,14 +121,14 @@ double DRBMTrainer::dataMeanH(DRBM & drbm, Eigen::VectorXf & data, int label, in
 	//return value;
 }
 
-double DRBMTrainer::dataMeanH(DRBM & drbm, Eigen::VectorXf & data, int label, int hindex, Eigen::MatrixXf & mujk)
+double DRBMTrainer::dataMeanH(DRBM & drbm, Eigen::VectorXd & data, int label, int hindex, Eigen::MatrixXd & mujk)
 {
 	// FIXME: muの計算使いまわしできそうだけど…
 	auto value = tanh(mujk(hindex, label));
 	return value;
 }
 
-double DRBMTrainer::dataMeanHY(DRBM & drbm, Eigen::VectorXf & data, int label, int hindex, int yindex)
+double DRBMTrainer::dataMeanHY(DRBM & drbm, Eigen::VectorXd & data, int label, int hindex, int yindex)
 {
 	//if (yindex != label) return 0.0;
 	//// FIXME: muの計算使いまわしできそうだけど…
@@ -140,7 +140,7 @@ double DRBMTrainer::dataMeanHY(DRBM & drbm, Eigen::VectorXf & data, int label, i
 	//return value;
 }
 
-double DRBMTrainer::dataMeanHY(DRBM & drbm, Eigen::VectorXf & data, int label, int hindex, int yindex, Eigen::MatrixXf & mujk)
+double DRBMTrainer::dataMeanHY(DRBM & drbm, Eigen::VectorXd & data, int label, int hindex, int yindex, Eigen::MatrixXd & mujk)
 {
 	if (yindex != label) return 0.0;
 
@@ -148,13 +148,13 @@ double DRBMTrainer::dataMeanHY(DRBM & drbm, Eigen::VectorXf & data, int label, i
 	return value;
 }
 
-double DRBMTrainer::dataMeanY(DRBM & drbm, Eigen::VectorXf & data, int label, int yindex)
+double DRBMTrainer::dataMeanY(DRBM & drbm, Eigen::VectorXd & data, int label, int yindex)
 {
 	//auto value = (yindex != label) ? 0.0 : 1.0;
 	//return value;
 }
 
-double DRBMTrainer::dataMeanY(DRBM & drbm, Eigen::VectorXf & data, int label, int yindex, Eigen::MatrixXf & muJK)
+double DRBMTrainer::dataMeanY(DRBM & drbm, Eigen::VectorXd & data, int label, int yindex, Eigen::MatrixXd & muJK)
 {
 	auto value = (yindex != label) ? 0.0 : 1.0;
 	return value;

@@ -6,13 +6,13 @@ public:
 	size_t  xSize;
 	size_t  hSize;
 	size_t  ySize;
-	Eigen::VectorXf nodeX;
-	Eigen::VectorXf nodeH;
-	Eigen::VectorXf nodeY;
-	Eigen::VectorXf biasC;
-	Eigen::VectorXf biasD;
-	Eigen::MatrixXf weightXH;
-	Eigen::MatrixXf weightHY;
+	Eigen::VectorXd nodeX;
+	Eigen::VectorXd nodeH;
+	Eigen::VectorXd nodeY;
+	Eigen::VectorXd biasC;
+	Eigen::VectorXd biasD;
+	Eigen::MatrixXd weightXH;
+	Eigen::MatrixXd weightHY;
 
 public:
 	DRBM();
@@ -23,22 +23,23 @@ public:
 	double normalizeConstantDiv2H();
 
 	double muJK(int hindex, int yindex);
-	Eigen::MatrixXf muJKMatrix();
+	Eigen::MatrixXd muJKMatrix();
 
 	double condProbY(int yindex);
 	double condProbY(int yindex, double z);
+	int maxCondProbYIndex();
 
 	double expectedValueXH(int xindex, int hindex);
 	double expectedValueXH(int xindex, int hindex, double z);
-	double expectedValueXH(int xindex, int hindex, double z, Eigen::MatrixXf & mujk);
+	double expectedValueXH(int xindex, int hindex, double z, Eigen::MatrixXd & mujk);
 	double expectedValueH(int hindex);
 	double expectedValueH(int hindex, double z);
-	double expectedValueH(int hindex, double z, Eigen::MatrixXf & mujk);
+	double expectedValueH(int hindex, double z, Eigen::MatrixXd & mujk);
 	double expectedValueHY(int hindex, int yindex);
 	double expectedValueHY(int hindex, int yindex, double z);
-	double expectedValueHY(int hindex, int yindex, double z, Eigen::MatrixXf & mujk);
+	double expectedValueHY(int hindex, int yindex, double z, Eigen::MatrixXd & mujk);
 	double expectedValueY(int yindex);
 	double expectedValueY(int yindex, double z);
-	double expectedValueY(int yindex, double z, Eigen::MatrixXf & mujk);
+	double expectedValueY(int yindex, double z, Eigen::MatrixXd & mujk);
 };
 
