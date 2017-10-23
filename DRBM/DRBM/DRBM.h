@@ -23,17 +23,22 @@ public:
 	double normalizeConstantDiv2H();
 
 	double muJK(int hindex, int yindex);
+	Eigen::MatrixXf muJKMatrix();
 
 	double condProbY(int yindex);
 	double condProbY(int yindex, double z);
 
 	double expectedValueXH(int xindex, int hindex);
 	double expectedValueXH(int xindex, int hindex, double z);
+	double expectedValueXH(int xindex, int hindex, double z, Eigen::MatrixXf & mujk);
 	double expectedValueH(int hindex);
 	double expectedValueH(int hindex, double z);
+	double expectedValueH(int hindex, double z, Eigen::MatrixXf & mujk);
 	double expectedValueHY(int hindex, int yindex);
 	double expectedValueHY(int hindex, int yindex, double z);
+	double expectedValueHY(int hindex, int yindex, double z, Eigen::MatrixXf & mujk);
 	double expectedValueY(int yindex);
 	double expectedValueY(int yindex, double z);
+	double expectedValueY(int yindex, double z, Eigen::MatrixXf & mujk);
 };
 

@@ -259,3 +259,7 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+/DRBMExam/DRBMExam/train-labels.idx1-ubyte
+/DRBMExam/DRBMExam/train-images.idx3-ubyte
+/DRBMExam/DRBMExam/t10k-labels.idx1-ubyte
+/DRBMExam/DRBMExam/t10k-images.idx3-ubyte

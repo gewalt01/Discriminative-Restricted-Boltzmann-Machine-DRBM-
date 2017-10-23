@@ -1,4 +1,4 @@
-#include "DRBMTrainer.h"
+﻿#include "DRBMTrainer.h"
 #include "DRBM.h"
 
 
@@ -25,28 +25,31 @@ DRBMTrainer::~DRBMTrainer()
 void DRBMTrainer::train(DRBM & drbm, Eigen::VectorXf & data, int label)
 {
 	// Online Learning(SGD)
+	drbm.nodeX = data;
 
 	auto z = drbm.normalizeConstantDiv2H();
 
 	// Gradient
+	auto mujk = drbm.muJKMatrix();
+
 	for (auto i = 0; i < drbm.xSize; i++) {
 		for (auto j = 0; j < drbm.hSize; j++) {
-			auto gradient = this->dataMeanXH(drbm, data, label, i, j) - drbm.expectedValueXH(i, j, z);
+			auto gradient = this->dataMeanXH(drbm, data, label, i, j, mujk) - drbm.expectedValueXH(i, j, z, mujk);
 			this->gradient.weightXH(i, j) = gradient;
 		}
 	}
 	for (auto j = 0; j < drbm.hSize; j++) {
-		auto gradient = this->dataMeanH(drbm, data, label, j) - drbm.expectedValueH(j, z);
+		auto gradient = this->dataMeanH(drbm, data, label, j, mujk) - drbm.expectedValueH(j, z, mujk);
 		this->gradient.biasC(j) = gradient;
 	}
 	for (auto j = 0; j < drbm.hSize; j++) {
 		for (auto k = 0; k < drbm.ySize; k++) {
-			auto gradient = this->dataMeanHY(drbm, data, label, j, k) - drbm.expectedValueHY(j, k, z);
+			auto gradient = this->dataMeanHY(drbm, data, label, j, k, mujk) - drbm.expectedValueHY(j, k, z, mujk);
 			this->gradient.weightHY(j, k) = gradient;
 		}
 	}
 	for (auto k = 0; k < drbm.ySize; k++) {
-		auto gradient = this->dataMeanY(drbm, data, label, k) - drbm.expectedValueY(k, z);
+		auto gradient = this->dataMeanY(drbm, data, label, k, mujk) - drbm.expectedValueY(k, z, mujk);
 		this->gradient.biasD(k) = gradient;
 	}
 
@@ -87,36 +90,71 @@ void DRBMTrainer::train(DRBM & drbm, Eigen::VectorXf & data, int label)
 
 double DRBMTrainer::dataMeanXH(DRBM & drbm, Eigen::VectorXf & data, int label, int xindex, int hindex)
 {
-	auto mu = drbm.biasC(hindex) + drbm.weightHY(hindex, label);
-	for (auto i = 0; i < drbm.xSize; i++) {
-		mu += drbm.weightXH(i, hindex) * data[i];
-	}
-	auto value = data.x[xindex] * tanh(mu);
+	//// FIXME: muの計算使いまわしできそうだけど…
+	//auto mu = drbm.biasC(hindex) + drbm.weightHY(hindex, label);
+	//for (auto i = 0; i < drbm.xSize; i++) {
+	//	mu += drbm.weightXH(i, hindex) * data[i];
+	//}
+	//auto value = data(xindex) * tanh(mu);
+	//return value;
+}
+
+double DRBMTrainer::dataMeanXH(DRBM & drbm, Eigen::VectorXf & data, int label, int xindex, int hindex, Eigen::MatrixXf & mujk)
+{
+	// FIXME: muの計算使いまわしできそうだけど…
+	//auto mu = drbm.biasC(hindex) + drbm.weightHY(hindex, label);
+	//for (auto i = 0; i < drbm.xSize; i++) {
+	//	mu += drbm.weightXH(i, hindex) * data[i];
+	//}
+	auto value = data(xindex) * tanh(mujk(hindex, label));
 	return value;
 }
 
 double DRBMTrainer::dataMeanH(DRBM & drbm, Eigen::VectorXf & data, int label, int hindex)
 {
-	auto mu = drbm.biasC(hindex) + drbm.weightHY(hindex, label);
-	for (auto i = 0; i < drbm.xSize; i++) {
-		mu += drbm.weightXH(i, hindex) * data[i];
-	}
-	auto value = tanh(mu);
+	//// FIXME: muの計算使いまわしできそうだけど…
+	//auto mu = drbm.biasC(hindex) + drbm.weightHY(hindex, label);
+	//for (auto i = 0; i < drbm.xSize; i++) {
+	//	mu += drbm.weightXH(i, hindex) * data[i];
+	//}
+	//auto value = tanh(mu);
+	//return value;
+}
+
+double DRBMTrainer::dataMeanH(DRBM & drbm, Eigen::VectorXf & data, int label, int hindex, Eigen::MatrixXf & mujk)
+{
+	// FIXME: muの計算使いまわしできそうだけど…
+	auto value = tanh(mujk(hindex, label));
 	return value;
 }
 
 double DRBMTrainer::dataMeanHY(DRBM & drbm, Eigen::VectorXf & data, int label, int hindex, int yindex)
 {
+	//if (yindex != label) return 0.0;
+	//// FIXME: muの計算使いまわしできそうだけど…
+	//auto mu = drbm.biasC(hindex) + drbm.weightHY(hindex, label);
+	//for (auto i = 0; i < drbm.xSize; i++) {
+	//	mu += drbm.weightXH(i, hindex) * data[i];
+	//}
+	//auto value = tanh(mu);
+	//return value;
+}
+
+double DRBMTrainer::dataMeanHY(DRBM & drbm, Eigen::VectorXf & data, int label, int hindex, int yindex, Eigen::MatrixXf & mujk)
+{
 	if (yindex != label) return 0.0;
-	auto mu = drbm.biasC(hindex) + drbm.weightHY(hindex, label);
-	for (auto i = 0; i < drbm.xSize; i++) {
-		mu += drbm.weightXH(i, hindex) * data[i];
-	}
-	auto value = tanh(mu);
+	// FIXME: muの計算使いまわしできそうだけど…
+	auto value = tanh(mujk(hindex, label));
 	return value;
 }
 
 double DRBMTrainer::dataMeanY(DRBM & drbm, Eigen::VectorXf & data, int label, int yindex)
+{
+	//auto value = (yindex != label) ? 0.0 : 1.0;
+	//return value;
+}
+
+double DRBMTrainer::dataMeanY(DRBM & drbm, Eigen::VectorXf & data, int label, int yindex, Eigen::MatrixXf & muJK)
 {
 	auto value = (yindex != label) ? 0.0 : 1.0;
 	return value;
