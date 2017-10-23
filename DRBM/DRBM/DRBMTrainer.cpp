@@ -143,7 +143,7 @@ double DRBMTrainer::dataMeanHY(DRBM & drbm, Eigen::VectorXf & data, int label, i
 double DRBMTrainer::dataMeanHY(DRBM & drbm, Eigen::VectorXf & data, int label, int hindex, int yindex, Eigen::MatrixXf & mujk)
 {
 	if (yindex != label) return 0.0;
-	// FIXME: muの計算使いまわしできそうだけど…
+
 	auto value = tanh(mujk(hindex, label));
 	return value;
 }

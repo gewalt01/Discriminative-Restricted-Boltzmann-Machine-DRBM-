@@ -54,6 +54,7 @@ double DRBM::normalizeConstantDiv2H()
 
 double DRBM::muJK(int hindex, int yindex)
 {
+	// XXX: Yノードに値が適切にセットされている必要がある
 	auto value = this->biasC(hindex) + this->weightHY(hindex, yindex);
 	for (int i = 0; i < this->xSize; i++) {
 		value += this->weightXH(i, hindex) * this->nodeX(i);
@@ -64,6 +65,7 @@ double DRBM::muJK(int hindex, int yindex)
 
 Eigen::MatrixXf DRBM::muJKMatrix()
 {
+	// XXX: Yノードに値が適切にセットされている必要がある
 	Eigen::MatrixXf mujk(this->hSize, this->ySize);
 	for (int j = 0; j < this->hSize; j++) {
 		for (int k = 0; k < this->ySize; k++) {
