@@ -52,9 +52,10 @@ double DRBM::muJK(int hindex, int yindex)
 {
 	// XXX: Yノードに値が適切にセットされている必要がある
 	auto value = this->biasC(hindex) + this->weightHY(hindex, yindex);
-	for (int i = 0; i < this->xSize; i++) {
-		value += this->weightXH(i, hindex) * this->nodeX(i);
-	}
+	value += this->weightXH.col(hindex).dot(this->nodeX);
+	//for (int i = 0; i < this->xSize; i++) {
+	//	value += this->weightXH(i, hindex) * this->nodeX(i);
+	//}
 
 	return value;
 }

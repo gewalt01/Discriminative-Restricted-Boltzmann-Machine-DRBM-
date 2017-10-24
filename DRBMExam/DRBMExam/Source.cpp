@@ -11,7 +11,7 @@
 #include "Eigen/Core"
 
 int main(void) {
-	DRBM drbm(784, 10, 10);
+	DRBM drbm(784, 50, 10);
 	DRBMTrainer trainer(drbm);
 	trainer.optimizer.alpha *= 1;
 	std::string train_data("train-images.idx3-ubyte"), train_label("train-labels.idx1-ubyte");
@@ -29,7 +29,6 @@ int main(void) {
 		for (int i = 0; i < data.size(); i++) {
 			eigen(i) = data[i];
 		}
-		//eigen(0) = -1.0;
 	};
 	std::vector<Eigen::VectorXd> dataset(mnist.dataset.size());
 	std::cout << drbm.normalizeConstantDiv2H() << std::endl;
@@ -87,8 +86,8 @@ int main(void) {
 		std::copy(all_index.begin(), all_index.begin() + batch_size, batch_indexes.begin());
 
 		trainer.train(drbm, dataset, mnist.labelset, batch_indexes);
-		std::cout << n << ": " << drbm.normalizeConstantDiv2H() << std::endl;
-		//std::cout << n << std::endl;
+		//std::cout << n << ": " << drbm.normalizeConstantDiv2H() << std::endl;
+		std::cout << n << std::endl;
 	}
 
 	double seikai = 0.0;
