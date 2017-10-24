@@ -3,14 +3,17 @@
 #include "DRBMTrainer.h"
 #include "mnist.h"
 #include <algorithm>
+#include <numeric>
 #include <random>
 #include "Eigen/Core"
 #include <iostream>
+#include <vector>
+#include "Eigen/Core"
 
 int main(void) {
-	DRBM drbm(784, 300, 10);
+	DRBM drbm(784, 10, 10);
 	DRBMTrainer trainer(drbm);
-	trainer.optimizer.alpha *= 0.1;
+	trainer.optimizer.alpha *= 1;
 	std::string train_data("train-images.idx3-ubyte"), train_label("train-labels.idx1-ubyte");
 	std::string test_data("t10k-images.idx3-ubyte"), test_label("t10k-labels.idx1-ubyte");
 	Mnist mnist(train_data, train_label);
@@ -22,14 +25,19 @@ int main(void) {
 	std::mt19937 engine(seed_gen());
 	std::shuffle(indexes.begin(), indexes.end(), engine);
 	auto set_data = [](auto & eigen, auto & data) {
+		eigen.resize(784);
 		for (int i = 0; i < data.size(); i++) {
 			eigen(i) = data[i];
 		}
+		//eigen(0) = -1.0;
 	};
-	Eigen::VectorXf eigen(784);
+	std::vector<Eigen::VectorXd> dataset(mnist.dataset.size());
 	std::cout << drbm.normalizeConstantDiv2H() << std::endl;
-	set_data(eigen, mnist.dataset[0]);
-	drbm.nodeX = eigen;
+
+	for (int n = 0; n < dataset.size(); n++) {
+		set_data(dataset[n], mnist.dataset[n]);
+	}
+	drbm.nodeX = dataset[0];
 	auto z = drbm.normalizeConstantDiv2H();
 
 	//std::cout << "--------- <xh> ---------";
@@ -66,14 +74,33 @@ int main(void) {
 	//}
 
 
+	int epoch = 60000;
+	int batch_size = 1;
+	for (int n = 0; n < epoch; n++) {
+		std::vector<int> all_index(dataset.size());
+		std::iota(all_index.begin(), all_index.end(), 0);
+		std::random_device seed_gen;
+		std::mt19937 engine(seed_gen());
+		std::shuffle(all_index.begin(), all_index.end(), engine);
 
-	for (int n = 0; n < indexes.size(); n++) {
-		set_data(eigen, mnist.dataset[n]);
-		auto label = mnist.labelset[n];
-		trainer.train(drbm, eigen, label);
+		std::vector<int> batch_indexes(batch_size);
+		std::copy(all_index.begin(), all_index.begin() + batch_size, batch_indexes.begin());
+
+		trainer.train(drbm, dataset, mnist.labelset, batch_indexes);
 		std::cout << n << ": " << drbm.normalizeConstantDiv2H() << std::endl;
+		//std::cout << n << std::endl;
 	}
 
+	double seikai = 0.0;
+	for (int n = 0; n < mnist_test.labelset.size(); n++) {
+		drbm.nodeX = dataset[n];
+		auto label = mnist_test.labelset[n];
+		auto inference = drbm.maxCondProbYIndex();
+		if (label == inference) seikai += 1.0;
+		std::cout << "inference: " << inference << ", label: " << label << std::endl;
+	}
+
+	std::cout << "rate: " << seikai / mnist_test.labelset.size() << std::endl;
 
 
 	getchar();

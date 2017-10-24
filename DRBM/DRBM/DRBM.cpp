@@ -16,13 +16,9 @@ DRBM::DRBM(size_t xsize, size_t hsize, size_t ysize)
 	this->nodeX.setConstant(xsize, 0.0);
 	this->nodeH.setConstant(hsize, 0.0);
 	this->nodeY.setConstant(ysize, 0.0);
-	this->biasC.setRandom(hsize);
 	this->biasC.setRandom(hsize) *= 0.01;
-	this->biasD.setRandom(ysize);
 	this->biasD.setRandom(ysize) *= 0.01;
-	this->weightXH.setRandom(xsize, hsize);
 	this->weightXH.setRandom(xsize, hsize) *= 0.001;
-	this->weightHY.setRandom(hsize, ysize);
 	this->weightHY.setRandom(hsize, ysize) *= 0.001;
 }
 
@@ -133,7 +129,7 @@ double DRBM::expectedValueXH(int xindex, int hindex, double z, Eigen::MatrixXd &
 {
 	auto value = this->nodeX(xindex) * this->expectedValueH(hindex, z, mujk);
 
-	return 0.0;
+	return value;
 }
 
 double DRBM::expectedValueH(int hindex)
@@ -180,7 +176,7 @@ double DRBM::expectedValueH(int hindex, double z, Eigen::MatrixXd & mujk)
 		k_val *= sinh(mujk(hindex, k));
 		value += k_val;
 	}
-	value /= z;
+	value = value / z;
 
 	return value;
 }
@@ -207,7 +203,7 @@ double DRBM::expectedValueHY(int hindex, int yindex, double z)
 	}
 
 	value *= sinh(this->muJK(hindex, yindex));
-	value /= z;
+	value = value / z;
 
 	return value;
 }
@@ -225,7 +221,7 @@ double DRBM::expectedValueHY(int hindex, int yindex, double z, Eigen::MatrixXd &
 	}
 
 	value *= sinh(mujk(hindex, yindex));
-	value /= z;
+	value = value / z;
 
 	return value;
 }
@@ -246,7 +242,7 @@ double DRBM::expectedValueY(int yindex, double z)
 		value *= cosh(this->muJK(j, yindex));
 	}
 
-	value /= z;
+	value = value / z;
 
 	return value;
 }
@@ -258,7 +254,7 @@ double DRBM::expectedValueY(int yindex, double z, Eigen::MatrixXd & mujk)
 		value *= cosh(mujk(j, yindex));
 	}
 
-	value /= z;
+	value = value / z;
 
 	return value;
 }

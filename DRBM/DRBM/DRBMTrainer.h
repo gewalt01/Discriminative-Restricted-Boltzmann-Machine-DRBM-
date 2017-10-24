@@ -1,6 +1,7 @@
 #pragma once
 #include "Eigen/Core"
 #include "DRBMOptimizer.h"
+#include <vector>
 class DRBM;
 
 class DRBMTrainer
@@ -20,7 +21,7 @@ public:
 	DRBMTrainer(DRBM & drbm);
 	~DRBMTrainer();
 
-	void train(DRBM & drbm, Eigen::VectorXd & data, int label);
+	void train(DRBM & drbm, std::vector<Eigen::VectorXd> & dataset, std::vector<int> & labelset, std::vector<int> & batch_indexes);
 	double dataMeanXH(DRBM & drbm, Eigen::VectorXd & data, int label, int xindex, int hindex);
 	double dataMeanXH(DRBM & drbm, Eigen::VectorXd & data, int label, int xindex, int hindex, Eigen::MatrixXd & muJK);
 	double dataMeanH(DRBM & drbm, Eigen::VectorXd & data, int label, int hindex);
