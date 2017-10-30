@@ -16,10 +16,10 @@ DRBM::DRBM(size_t xsize, size_t hsize, size_t ysize)
 	this->nodeX.setConstant(xsize, 0.0);
 	this->nodeH.setConstant(hsize, 0.0);
 	this->nodeY.setConstant(ysize, 0.0);
-	this->biasC.setRandom(hsize) *= 0.01;
-	this->biasD.setRandom(ysize) *= 0.01;
-	this->weightXH.setRandom(xsize, hsize) *= 0.001;
-	this->weightHY.setRandom(hsize, ysize) *= 0.001;
+	this->biasC.setConstant(hsize, 0.0);
+	this->biasD.setConstant(ysize, 0.0);
+	this->weightXH.setRandom(xsize, hsize) /= sqrt(xsize + ysize);
+	this->weightHY.setRandom(hsize, ysize) /= sqrt(hsize);
 }
 
 

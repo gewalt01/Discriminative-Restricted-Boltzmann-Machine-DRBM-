@@ -31,50 +31,25 @@ int main(void) {
 		}
 	};
 	std::vector<Eigen::VectorXd> dataset(mnist.dataset.size());
+	std::vector<Eigen::VectorXd> dataset_test(mnist_test.dataset.size());
 	std::cout << drbm.normalizeConstantDiv2H() << std::endl;
 
 	for (int n = 0; n < dataset.size(); n++) {
 		set_data(dataset[n], mnist.dataset[n]);
 	}
-	drbm.nodeX = dataset[0];
+
+	for (int n = 0; n < dataset_test.size(); n++) {
+		set_data(dataset_test[n], mnist_test.dataset[n]);
+	}
+	drbm.nodeX = dataset_test[0];
 	auto z = drbm.normalizeConstantDiv2H();
 
-	//std::cout << "--------- <xh> ---------";
-	//for (int i = 0; i < drbm.xSize; i++) {
-	//	for (int j = 0; j < drbm.hSize; j++) {
-	//		std::cout << drbm.expectedValueXH(i, j, z) << std::endl;
-	//	}
-	//}
 
-	//std::cout << "--------- <h> ---------";
-	//for (int j = 0; j < drbm.hSize; j++) {
-	//	std::cout << drbm.expectedValueH(j, z) << std::endl;
-	//}
+	auto drbm_backup = drbm;
+	auto drbm_delta = drbm;
 
-	//std::cout << "--------- <hy> ---------";
-	//for (int j = 0; j < drbm.hSize; j++) {
-	//	for (int k = 0; k < drbm.ySize; k++) {
-	//		std::cout << drbm.expectedValueHY(j, k, z) << std::endl;
-	//	}
-	//}
-
-
-	//std::cout << "--------- <y> ---------";
-	//for (int k = 0; k < drbm.ySize; k++) {
-	//	std::cout << drbm.expectedValueY(k, z) << std::endl;
-	//}
-
-
-	//std::cout << "--------- MuJK ---------";
-	//for (int j = 0; j < drbm.hSize; j++) {
-	//	for (int k = 0; k < drbm.ySize; k++) {
-	//		std::cout << drbm.muJK(j, k) << std::endl;
-	//	}
-	//}
-
-
-	int epoch = 60000;
-	int batch_size = 1;
+	int epoch = 5000000;
+	int batch_size = 5;
 	for (int n = 0; n < epoch; n++) {
 		std::vector<int> all_index(dataset.size());
 		std::iota(all_index.begin(), all_index.end(), 0);
@@ -88,15 +63,40 @@ int main(void) {
 		trainer.train(drbm, dataset, mnist.labelset, batch_indexes);
 		//std::cout << n << ": " << drbm.normalizeConstantDiv2H() << std::endl;
 		std::cout << n << std::endl;
+
+		drbm_delta = drbm;
+		if (n % 1000 == 0) {
+			double seikai = 0.0;
+			std::vector<int> histgram(10);
+			for (int n = 0; n < mnist_test.labelset.size(); n++) {
+				drbm.nodeX = dataset_test[n];
+				auto label = mnist_test.labelset[n];
+				auto inference = drbm.maxCondProbYIndex();
+				if (label == inference) seikai += 1.0;
+				histgram[inference]++;
+				//		std::cout << "inference: " << inference << ", label: " << label << std::endl;
+			}
+			for (int i = 0; i < histgram.size(); i++) {
+				std::cout << "histgram[" << i << "]: " << histgram[i] << std::endl;
+			}
+
+			std::cout << "rate: " << seikai / mnist.labelset.size() << std::endl;
+			std::cout << n << ": " << drbm.normalizeConstantDiv2H() << std::endl;
+		}
 	}
 
 	double seikai = 0.0;
+	std::vector<int> histgram(10);
 	for (int n = 0; n < mnist_test.labelset.size(); n++) {
-		drbm.nodeX = dataset[n];
+		drbm.nodeX = dataset_test[n];
 		auto label = mnist_test.labelset[n];
 		auto inference = drbm.maxCondProbYIndex();
 		if (label == inference) seikai += 1.0;
-		std::cout << "inference: " << inference << ", label: " << label << std::endl;
+		histgram[inference]++;
+//		std::cout << "inference: " << inference << ", label: " << label << std::endl;
+	}
+	for (int i = 0; i < histgram.size(); i++) {
+		std::cout << "histgram[" << i << "]: " << histgram[i] << std::endl;
 	}
 
 	std::cout << "rate: " << seikai / mnist_test.labelset.size() << std::endl;

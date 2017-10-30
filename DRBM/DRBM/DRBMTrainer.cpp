@@ -45,20 +45,20 @@ void DRBMTrainer::train(DRBM & drbm, std::vector<Eigen::VectorXd> & dataset, std
 				this->gradient.weightXH(i, j) += gradient * inv_batch_size;
 			}
 		}
-		for (auto j = 0; j < drbm.hSize; j++) {
-			auto gradient = this->dataMeanH(drbm, data, label, j, mujk) - drbm.expectedValueH(j, z, mujk);
-			this->gradient.biasC(j) += gradient * inv_batch_size;
-		}
+		//for (auto j = 0; j < drbm.hSize; j++) {
+			//auto gradient = this->dataMeanH(drbm, data, label, j, mujk) - drbm.expectedValueH(j, z, mujk);
+			//this->gradient.biasC(j) += gradient * inv_batch_size;
+		//}
 		for (auto j = 0; j < drbm.hSize; j++) {
 			for (auto k = 0; k < drbm.ySize; k++) {
 				auto gradient = this->dataMeanHY(drbm, data, label, j, k, mujk) - drbm.expectedValueHY(j, k, z, mujk);
 				this->gradient.weightHY(j, k) += gradient * inv_batch_size;
 			}
 		}
-		for (auto k = 0; k < drbm.ySize; k++) {
-			auto gradient = this->dataMeanY(drbm, data, label, k, mujk) - drbm.expectedValueY(k, z, mujk);
-			this->gradient.biasD(k) += gradient * inv_batch_size;
-		}
+		//for (auto k = 0; k < drbm.ySize; k++) {
+			//auto gradient = this->dataMeanY(drbm, data, label, k, mujk) - drbm.expectedValueY(k, z, mujk);
+			//this->gradient.biasD(k) += gradient * inv_batch_size;
+		//}
 	}
 
 	// update
@@ -71,13 +71,13 @@ void DRBMTrainer::train(DRBM & drbm, std::vector<Eigen::VectorXd> & dataset, std
 			//drbm.weightXH(i, j) += gradient * 0.01;
 		}
 	}
-	for (auto j = 0; j < drbm.hSize; j++) {
-		auto gradient = this->gradient.biasC(j);
-		auto delta = this->optimizer.deltaBiasC(j, gradient);
-		auto new_param = drbm.biasC(j) + delta;
-		//drbm.biasC(j) = new_param;
-		//drbm.biasC(j) += gradient * 0.01;
-	}
+	//for (auto j = 0; j < drbm.hSize; j++) {
+	//	auto gradient = this->gradient.biasC(j);
+	//	auto delta = this->optimizer.deltaBiasC(j, gradient);
+	//	auto new_param = drbm.biasC(j) + delta;
+	//	drbm.biasC(j) = new_param;
+	//	//drbm.biasC(j) += gradient * 0.01;
+	//}
 	for (auto j = 0; j < drbm.hSize; j++) {
 		for (auto k = 0; k < drbm.ySize; k++) {
 			auto gradient = this->gradient.weightHY(j, k);
@@ -87,13 +87,13 @@ void DRBMTrainer::train(DRBM & drbm, std::vector<Eigen::VectorXd> & dataset, std
 			//drbm.weightHY(j, k) += gradient * 0.01;
 		}
 	}
-	for (auto k = 0; k < drbm.ySize; k++) {
-		auto gradient = this->gradient.biasD(k);
-		auto delta = this->optimizer.deltaBiasD(k, gradient);
-		auto new_param = drbm.biasD(k) + delta;
-		//drbm.biasD(k) = new_param;
-		//drbm.biasD(k) += gradient * 0.01;
-	}
+	//for (auto k = 0; k < drbm.ySize; k++) {
+	//	auto gradient = this->gradient.biasD(k);
+	//	auto delta = this->optimizer.deltaBiasD(k, gradient);
+	//	auto new_param = drbm.biasD(k) + delta;
+	//	drbm.biasD(k) = new_param;
+	//	//drbm.biasD(k) += gradient * 0.01;
+	//}
 
 	// update optimizer
 	this->optimizer.iteration++;
