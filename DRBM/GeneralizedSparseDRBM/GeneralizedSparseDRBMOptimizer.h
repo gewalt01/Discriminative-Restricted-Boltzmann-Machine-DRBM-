@@ -1,13 +1,14 @@
 #pragma once
 #include "Eigen/Core"
 
-class DRBM;
+class GeneralizedSparseDRBM;
 
-class DRBMOptimizer
+class GeneralizedSparseDRBMOptimizer
 {
 	struct moment {
 		Eigen::VectorXd biasH;
 		Eigen::VectorXd biasY;
+		Eigen::VectorXd sparseH;
 		Eigen::MatrixXd weightXH;
 		Eigen::MatrixXd weightHY;
 	};
@@ -22,12 +23,13 @@ public:
 	struct moment moment2;
 
 public:
-	DRBMOptimizer();
-	DRBMOptimizer(DRBM & drbm);
-	~DRBMOptimizer();
+	GeneralizedSparseDRBMOptimizer();
+	GeneralizedSparseDRBMOptimizer(GeneralizedSparseDRBM & GeneralizedSparseDRBM);
+	~GeneralizedSparseDRBMOptimizer();
 
 	double deltaBiasH(int hindex, double gradient);
 	double deltaBiasY(int yindex, double gradient);
+	double deltaSparseH(int hindex, double gradient);
 	double deltaWeightXH(int xindex, int hindex, double gradient);
 	double deltaWeightHY(int hindex, int yindex, double gradient);
 };

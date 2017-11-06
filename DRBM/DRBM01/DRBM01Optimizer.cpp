@@ -1,12 +1,12 @@
-#include "DRBMOptimizer.h"
-#include "DRBM.h"
+#include "DRBM01Optimizer.h"
+#include "DRBM01.h"
 
 
-DRBMOptimizer::DRBMOptimizer()
+DRBM01Optimizer::DRBM01Optimizer()
 {
 }
 
-DRBMOptimizer::DRBMOptimizer(DRBM & drbm)
+DRBM01Optimizer::DRBM01Optimizer(DRBM01 & drbm)
 {
 	this->moment1.biasH.setConstant(drbm.hSize, 0.0);
 	this->moment1.biasY.setConstant(drbm.ySize, 0.0);
@@ -20,11 +20,11 @@ DRBMOptimizer::DRBMOptimizer(DRBM & drbm)
 }
 
 
-DRBMOptimizer::~DRBMOptimizer()
+DRBM01Optimizer::~DRBM01Optimizer()
 {
 }
 
-double DRBMOptimizer::deltaBiasH(int hindex, double gradient)
+double DRBM01Optimizer::deltaBiasH(int hindex, double gradient)
 {
 	// Adamax
 	auto m = this->moment1.biasH(hindex) = this->beta1 * this->moment1.biasH(hindex) + (1.0 - this->beta1) * gradient;
@@ -34,7 +34,7 @@ double DRBMOptimizer::deltaBiasH(int hindex, double gradient)
 	return delta;
 }
 
-double DRBMOptimizer::deltaBiasY(int yindex, double gradient)
+double DRBM01Optimizer::deltaBiasY(int yindex, double gradient)
 {
 	// Adamax
 	auto m = this->moment1.biasY(yindex) = this->beta1 * this->moment1.biasY(yindex) + (1.0 - this->beta1) * gradient;
@@ -44,7 +44,7 @@ double DRBMOptimizer::deltaBiasY(int yindex, double gradient)
 	return delta;
 }
 
-double DRBMOptimizer::deltaWeightXH(int xindex, int hindex, double gradient)
+double DRBM01Optimizer::deltaWeightXH(int xindex, int hindex, double gradient)
 {
 	// Adamax
 	auto m = this->moment1.weightXH(xindex, hindex) = this->beta1 * this->moment1.weightXH(xindex, hindex) + (1.0 - this->beta1) * gradient;
@@ -54,7 +54,7 @@ double DRBMOptimizer::deltaWeightXH(int xindex, int hindex, double gradient)
 	return delta;
 }
 
-double DRBMOptimizer::deltaWeightHY(int hindex, int yindex, double gradient)
+double DRBM01Optimizer::deltaWeightHY(int hindex, int yindex, double gradient)
 {
 	// Adamax
 	auto m = this->moment1.weightHY(hindex, yindex) = this->beta1 * this->moment1.weightHY(hindex, yindex) + (1.0 - this->beta1) * gradient;

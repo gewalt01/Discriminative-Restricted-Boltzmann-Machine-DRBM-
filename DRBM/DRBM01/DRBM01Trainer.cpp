@@ -1,27 +1,27 @@
-﻿#include "DRBMTrainer.h"
-#include "DRBM.h"
+﻿#include "DRBM01Trainer.h"
+#include "DRBM01.h"
 #include <omp.h>
 
-DRBMTrainer::DRBMTrainer()
+DRBM01Trainer::DRBM01Trainer()
 {
 }
 
-DRBMTrainer::DRBMTrainer(DRBM & drbm)
+DRBM01Trainer::DRBM01Trainer(DRBM01 & drbm)
 {
 	this->gradient.biasH.setConstant(drbm.hSize, 0.0);
 	this->gradient.biasY.setConstant(drbm.ySize, 0.0);
 	this->gradient.weightXH.setConstant(drbm.xSize, drbm.hSize, 0.0);
 	this->gradient.weightHY.setConstant(drbm.hSize, drbm.ySize, 0.0);
 
-	this->optimizer = DRBMOptimizer(drbm);
+	this->optimizer = DRBM01Optimizer(drbm);
 }
 
 
-DRBMTrainer::~DRBMTrainer()
+DRBM01Trainer::~DRBM01Trainer()
 {
 }
 
-void DRBMTrainer::train(DRBM & drbm, std::vector<Eigen::VectorXd> & dataset, std::vector<int> & labelset, std::vector<int> & batch_indexes)
+void DRBM01Trainer::train(DRBM01 & drbm, std::vector<Eigen::VectorXd> & dataset, std::vector<int> & labelset, std::vector<int> & batch_indexes)
 {
 	//(SGD)
 	this->gradient.biasH.setConstant(0.0);
@@ -31,7 +31,7 @@ void DRBMTrainer::train(DRBM & drbm, std::vector<Eigen::VectorXd> & dataset, std
 	double inv_batch_size = 1.0 / batch_indexes.size();
 
 	auto batch_size = batch_indexes.size();
-	#pragma omp parallel for
+#pragma omp parallel for
 	for (int n = 0; n < batch_size; n++) {
 		auto drbm_replica = drbm;
 		int index = batch_indexes[n];
@@ -39,7 +39,7 @@ void DRBMTrainer::train(DRBM & drbm, std::vector<Eigen::VectorXd> & dataset, std
 		drbm_replica.nodeX = data;
 		auto & label = labelset[index];
 
-		auto z = drbm_replica.normalizeConstantDiv2H();
+		auto z = drbm_replica.normalizeConstant();
 
 		// Gradient
 		auto mujk = drbm_replica.muJKMatrix();
@@ -97,7 +97,7 @@ void DRBMTrainer::train(DRBM & drbm, std::vector<Eigen::VectorXd> & dataset, std
 		auto delta = this->optimizer.deltaBiasY(k, gradient);
 		auto new_param = drbm.biasY(k) + delta;
 		drbm.biasY(k) = new_param;
-	//	//drbm.biasY(k) += gradient * 0.01;
+		//	//drbm.biasY(k) += gradient * 0.01;
 	}
 
 	// update optimizer
@@ -105,49 +105,49 @@ void DRBMTrainer::train(DRBM & drbm, std::vector<Eigen::VectorXd> & dataset, std
 
 }
 
-double DRBMTrainer::dataMeanXH(DRBM & drbm, Eigen::VectorXd & data, int label, int xindex, int hindex)
+double DRBM01Trainer::dataMeanXH(DRBM01 & drbm, Eigen::VectorXd & data, int label, int xindex, int hindex)
 {
 	//// FIXME: muの計算使いまわしできそうだけど…
 	//auto mu = drbm.biasH(hindex) + drbm.weightHY(hindex, label);
 	//for (auto i = 0; i < drbm.xSize; i++) {
 	//	mu += drbm.weightXH(i, hindex) * data[i];
 	//}
-	//auto value = data(xindex) * tanh(mu);
+	//auto value = data(xindex) * drbm.sigmoid(mu);
 	//return value;
 	return 0;
 }
 
-double DRBMTrainer::dataMeanXH(DRBM & drbm, Eigen::VectorXd & data, int label, int xindex, int hindex, Eigen::MatrixXd & mujk)
+double DRBM01Trainer::dataMeanXH(DRBM01 & drbm, Eigen::VectorXd & data, int label, int xindex, int hindex, Eigen::MatrixXd & mujk)
 {
 	// FIXME: muの計算使いまわしできそうだけど…
 	//auto mu = drbm.biasH(hindex) + drbm.weightHY(hindex, label);
 	//for (auto i = 0; i < drbm.xSize; i++) {
 	//	mu += drbm.weightXH(i, hindex) * data[i];
 	//}
-	auto value = data(xindex) * tanh(mujk(hindex, label));
+	auto value = data(xindex) * drbm.sigmoid(mujk(hindex, label));
 	return value;
 }
 
-double DRBMTrainer::dataMeanH(DRBM & drbm, Eigen::VectorXd & data, int label, int hindex)
+double DRBM01Trainer::dataMeanH(DRBM01 & drbm, Eigen::VectorXd & data, int label, int hindex)
 {
 	//// FIXME: muの計算使いまわしできそうだけど…
 	//auto mu = drbm.biasH(hindex) + drbm.weightHY(hindex, label);
 	//for (auto i = 0; i < drbm.xSize; i++) {
 	//	mu += drbm.weightXH(i, hindex) * data[i];
 	//}
-	//auto value = tanh(mu);
+	//auto value = drbm.sigmoid(mu);
 	//return value;
 	return 0;
 }
 
-double DRBMTrainer::dataMeanH(DRBM & drbm, Eigen::VectorXd & data, int label, int hindex, Eigen::MatrixXd & mujk)
+double DRBM01Trainer::dataMeanH(DRBM01 & drbm, Eigen::VectorXd & data, int label, int hindex, Eigen::MatrixXd & mujk)
 {
 	// FIXME: muの計算使いまわしできそうだけど…
-	auto value = tanh(mujk(hindex, label));
+	auto value = drbm.sigmoid(mujk(hindex, label));
 	return value;
 }
 
-double DRBMTrainer::dataMeanHY(DRBM & drbm, Eigen::VectorXd & data, int label, int hindex, int yindex)
+double DRBM01Trainer::dataMeanHY(DRBM01 & drbm, Eigen::VectorXd & data, int label, int hindex, int yindex)
 {
 	//if (yindex != label) return 0.0;
 	//// FIXME: muの計算使いまわしできそうだけど…
@@ -155,27 +155,27 @@ double DRBMTrainer::dataMeanHY(DRBM & drbm, Eigen::VectorXd & data, int label, i
 	//for (auto i = 0; i < drbm.xSize; i++) {
 	//	mu += drbm.weightXH(i, hindex) * data[i];
 	//}
-	//auto value = tanh(mu);
+	//auto value = drbm.sigmoid(mu);
 	//return value;
 	return 0;
 }
 
-double DRBMTrainer::dataMeanHY(DRBM & drbm, Eigen::VectorXd & data, int label, int hindex, int yindex, Eigen::MatrixXd & mujk)
+double DRBM01Trainer::dataMeanHY(DRBM01 & drbm, Eigen::VectorXd & data, int label, int hindex, int yindex, Eigen::MatrixXd & mujk)
 {
 	if (yindex != label) return 0.0;
 
-	auto value = tanh(mujk(hindex, label));
+	auto value = drbm.sigmoid(mujk(hindex, label));
 	return value;
 }
 
-double DRBMTrainer::dataMeanY(DRBM & drbm, Eigen::VectorXd & data, int label, int yindex)
+double DRBM01Trainer::dataMeanY(DRBM01 & drbm, Eigen::VectorXd & data, int label, int yindex)
 {
 	//auto value = (yindex != label) ? 0.0 : 1.0;
 	//return value;
 	return 0;
 }
 
-double DRBMTrainer::dataMeanY(DRBM & drbm, Eigen::VectorXd & data, int label, int yindex, Eigen::MatrixXd & muJK)
+double DRBM01Trainer::dataMeanY(DRBM01 & drbm, Eigen::VectorXd & data, int label, int yindex, Eigen::MatrixXd & muJK)
 {
 	auto value = (yindex != label) ? 0.0 : 1.0;
 	return value;

@@ -1,6 +1,6 @@
 #pragma once
 #include "Eigen/Core"
-class DRBM
+class SparseDRBM
 {
 public:
 	size_t  xSize;
@@ -11,13 +11,14 @@ public:
 	Eigen::VectorXd nodeY;
 	Eigen::VectorXd biasH;
 	Eigen::VectorXd biasY;
+	Eigen::VectorXd sparseH;
 	Eigen::MatrixXd weightXH;
 	Eigen::MatrixXd weightHY;
 
 public:
-	DRBM();
-	DRBM(size_t xsize, size_t hsize, size_t ysize);
-	~DRBM();
+	SparseDRBM();
+	SparseDRBM(size_t xsize, size_t hsize, size_t ysize);
+	~SparseDRBM();
 
 	double normalizeConstant();
 	double normalizeConstantDiv2H();
@@ -41,5 +42,8 @@ public:
 	double expectedValueY(int yindex);
 	double expectedValueY(int yindex, double z);
 	double expectedValueY(int yindex, double z, Eigen::MatrixXd & mujk);
+	double expectedValueAbsHExpSparse(int hindex);
+	double expectedValueAbsHExpSparse(int hindex, double z);
+	double expectedValueAbsHExpSparse(int hindex, double z, Eigen::MatrixXd & mujk);
 };
 

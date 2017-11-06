@@ -1,9 +1,9 @@
 #pragma once
 #include "Eigen/Core"
 
-class DRBM;
+class GeneralizedDRBM;
 
-class DRBMOptimizer
+class GeneralizedDRBMOptimizer
 {
 	struct moment {
 		Eigen::VectorXd biasH;
@@ -22,9 +22,9 @@ public:
 	struct moment moment2;
 
 public:
-	DRBMOptimizer();
-	DRBMOptimizer(DRBM & drbm);
-	~DRBMOptimizer();
+	GeneralizedDRBMOptimizer();
+	GeneralizedDRBMOptimizer(GeneralizedDRBM & drbm);
+	~GeneralizedDRBMOptimizer();
 
 	double deltaBiasH(int hindex, double gradient);
 	double deltaBiasY(int yindex, double gradient);

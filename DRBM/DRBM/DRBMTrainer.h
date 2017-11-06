@@ -8,8 +8,8 @@ class DRBMTrainer
 {
 public:
 	struct {
-		Eigen::VectorXd biasC;
-		Eigen::VectorXd biasD;
+		Eigen::VectorXd biasH;
+		Eigen::VectorXd biasY;
 		Eigen::MatrixXd weightXH;
 		Eigen::MatrixXd weightHY;
 	} gradient;

@@ -1,12 +1,12 @@
-#include "DRBMOptimizer.h"
-#include "DRBM.h"
+#include "GeneralizedDRBMOptimizer.h"
+#include "GeneralizedDRBM.h"
 
 
-DRBMOptimizer::DRBMOptimizer()
+GeneralizedDRBMOptimizer::GeneralizedDRBMOptimizer()
 {
 }
 
-DRBMOptimizer::DRBMOptimizer(DRBM & drbm)
+GeneralizedDRBMOptimizer::GeneralizedDRBMOptimizer(GeneralizedDRBM & drbm)
 {
 	this->moment1.biasH.setConstant(drbm.hSize, 0.0);
 	this->moment1.biasY.setConstant(drbm.ySize, 0.0);
@@ -20,11 +20,11 @@ DRBMOptimizer::DRBMOptimizer(DRBM & drbm)
 }
 
 
-DRBMOptimizer::~DRBMOptimizer()
+GeneralizedDRBMOptimizer::~GeneralizedDRBMOptimizer()
 {
 }
 
-double DRBMOptimizer::deltaBiasH(int hindex, double gradient)
+double GeneralizedDRBMOptimizer::deltaBiasH(int hindex, double gradient)
 {
 	// Adamax
 	auto m = this->moment1.biasH(hindex) = this->beta1 * this->moment1.biasH(hindex) + (1.0 - this->beta1) * gradient;
@@ -34,7 +34,7 @@ double DRBMOptimizer::deltaBiasH(int hindex, double gradient)
 	return delta;
 }
 
-double DRBMOptimizer::deltaBiasY(int yindex, double gradient)
+double GeneralizedDRBMOptimizer::deltaBiasY(int yindex, double gradient)
 {
 	// Adamax
 	auto m = this->moment1.biasY(yindex) = this->beta1 * this->moment1.biasY(yindex) + (1.0 - this->beta1) * gradient;
@@ -44,7 +44,7 @@ double DRBMOptimizer::deltaBiasY(int yindex, double gradient)
 	return delta;
 }
 
-double DRBMOptimizer::deltaWeightXH(int xindex, int hindex, double gradient)
+double GeneralizedDRBMOptimizer::deltaWeightXH(int xindex, int hindex, double gradient)
 {
 	// Adamax
 	auto m = this->moment1.weightXH(xindex, hindex) = this->beta1 * this->moment1.weightXH(xindex, hindex) + (1.0 - this->beta1) * gradient;
@@ -54,7 +54,7 @@ double DRBMOptimizer::deltaWeightXH(int xindex, int hindex, double gradient)
 	return delta;
 }
 
-double DRBMOptimizer::deltaWeightHY(int hindex, int yindex, double gradient)
+double GeneralizedDRBMOptimizer::deltaWeightHY(int hindex, int yindex, double gradient)
 {
 	// Adamax
 	auto m = this->moment1.weightHY(hindex, yindex) = this->beta1 * this->moment1.weightHY(hindex, yindex) + (1.0 - this->beta1) * gradient;

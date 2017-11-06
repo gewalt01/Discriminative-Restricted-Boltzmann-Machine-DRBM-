@@ -1,6 +1,6 @@
 #pragma once
 #include "Eigen/Core"
-class DRBM
+class DRBM01
 {
 public:
 	size_t  xSize;
@@ -15,12 +15,13 @@ public:
 	Eigen::MatrixXd weightHY;
 
 public:
-	DRBM();
-	DRBM(size_t xsize, size_t hsize, size_t ysize);
-	~DRBM();
+	DRBM01();
+	DRBM01(size_t xsize, size_t hsize, size_t ysize);
+	~DRBM01();
 
 	double normalizeConstant();
-	double normalizeConstantDiv2H();
+
+	double sigmoid(double x) { return 1.0 / (1.0 + exp(-x)); }
 
 	double muJK(int hindex, int yindex);
 	Eigen::MatrixXd muJKMatrix();

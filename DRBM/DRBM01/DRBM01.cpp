@@ -1,13 +1,13 @@
-﻿#include "DRBM.h"
+﻿#include "DRBM01.h"
 #include <vector>
 #include <numeric>
 #include <algorithm>
 
-DRBM::DRBM()
+DRBM01::DRBM01()
 {
 }
 
-DRBM::DRBM(size_t xsize, size_t hsize, size_t ysize)
+DRBM01::DRBM01(size_t xsize, size_t hsize, size_t ysize)
 {
 	this->xSize = xsize;
 	this->hSize = hsize;
@@ -23,25 +23,18 @@ DRBM::DRBM(size_t xsize, size_t hsize, size_t ysize)
 }
 
 
-DRBM::~DRBM()
+DRBM01::~DRBM01()
 {
 }
 
-double DRBM::normalizeConstant()
-{
-	auto value = pow(2, this->hSize) * this->normalizeConstantDiv2H();
-
-	return value;
-}
-
-double DRBM::normalizeConstantDiv2H()
+double DRBM01::normalizeConstant()
 {
 	auto value = 0.0;
 	auto mu_jk = this->muJKMatrix();
 	for (int k = 0; k < this->ySize; k++) {
 		auto k_val = exp(this->biasY(k));
 		for (int j = 0; j < this->hSize; j++) {
-			k_val *= cosh(mu_jk(j, k));
+			k_val *= (1.0 + exp(mu_jk(j, k)));
 		}
 		value += k_val;
 	}
@@ -49,7 +42,7 @@ double DRBM::normalizeConstantDiv2H()
 	return value;
 }
 
-double DRBM::muJK(int hindex, int yindex)
+double DRBM01::muJK(int hindex, int yindex)
 {
 	// XXX: Yノードに値が適切にセットされている必要がある
 	auto value = this->biasH(hindex) + this->weightHY(hindex, yindex);
@@ -61,10 +54,10 @@ double DRBM::muJK(int hindex, int yindex)
 	return value;
 }
 
-Eigen::MatrixXd DRBM::muJKMatrix()
+Eigen::MatrixXd DRBM01::muJKMatrix()
 {
 	Eigen::MatrixXd mujk(this->hSize, this->ySize);
-	
+
 	// w^t * x
 	auto a = this->weightXH.transpose() * this->nodeX;
 	for (int j = 0; j < this->hSize; j++) {
@@ -81,22 +74,22 @@ Eigen::MatrixXd DRBM::muJKMatrix()
 	return mujk;
 }
 
-double DRBM::condProbY(int yindex)
+double DRBM01::condProbY(int yindex)
 {
-	auto z = this->normalizeConstantDiv2H();
+	auto z = this->normalizeConstant();
 	auto value = this->condProbY(yindex, z);
 
 	return value;
 }
 
-double DRBM::condProbY(int yindex, double z)
+double DRBM01::condProbY(int yindex, double z)
 {
 	auto & z_k = z;
 	auto potential = 0.0; {
 		auto k_val = exp(this->biasY(yindex));
 		for (auto j = 0; j < this->hSize; j++) {
 			auto mu_jk = this->muJK(j, yindex);
-			k_val += cosh(mu_jk);
+			k_val += (1.0 + exp(mu_jk));
 		}
 		potential += k_val;
 	}
@@ -104,10 +97,10 @@ double DRBM::condProbY(int yindex, double z)
 	return value;
 }
 
-int DRBM::maxCondProbYIndex()
+int DRBM01::maxCondProbYIndex()
 {
 	std::vector<double> probs(this->ySize);
-	auto z_k = this->normalizeConstantDiv2H();
+	auto z_k = this->normalizeConstant();
 	for (int k = 0; k < this->ySize; k++) {
 		probs[k] = condProbY(k, z_k);
 	}
@@ -119,37 +112,37 @@ int DRBM::maxCondProbYIndex()
 
 }
 
-double DRBM::expectedValueXH(int xindex, int hindex)
+double DRBM01::expectedValueXH(int xindex, int hindex)
 {
-	auto z = this->normalizeConstantDiv2H();
+	auto z = this->normalizeConstant();
 	auto value = this->expectedValueXH(xindex, hindex, z);
 
 	return value;
 }
 
-double DRBM::expectedValueXH(int xindex, int hindex, double z)
+double DRBM01::expectedValueXH(int xindex, int hindex, double z)
 {
 	auto value = this->nodeX(xindex) * this->expectedValueH(hindex, z);
 
 	return value;
 }
 
-double DRBM::expectedValueXH(int xindex, int hindex, double z, Eigen::MatrixXd & mujk)
+double DRBM01::expectedValueXH(int xindex, int hindex, double z, Eigen::MatrixXd & mujk)
 {
 	auto value = this->nodeX(xindex) * this->expectedValueH(hindex, z, mujk);
 
 	return value;
 }
 
-double DRBM::expectedValueH(int hindex)
+double DRBM01::expectedValueH(int hindex)
 {
-	auto z = this->normalizeConstantDiv2H();
+	auto z = this->normalizeConstant();
 	auto value = this->expectedValueH(hindex, z);
 
 	return value;
 }
 
-double DRBM::expectedValueH(int hindex, double z)
+double DRBM01::expectedValueH(int hindex, double z)
 {
 	std::vector<int> lindex(this->hSize);
 	std::iota(lindex.begin(), lindex.end(), 0);
@@ -161,9 +154,9 @@ double DRBM::expectedValueH(int hindex, double z)
 	for (auto k = 0; k < this->ySize; k++) {
 		auto k_val = exp(this->biasY(k));
 		for (auto & l : lindex) {
-			k_val *= cosh(mu_jk(l, k));
+			k_val *= (1.0 + exp(mu_jk(l, k)));
 		}
-		k_val *= sinh(mu_jk(hindex, k));
+		k_val *= exp(mu_jk(hindex, k));
 		value += k_val;
 	}
 	value /= z;
@@ -171,7 +164,7 @@ double DRBM::expectedValueH(int hindex, double z)
 	return value;
 }
 
-double DRBM::expectedValueH(int hindex, double z, Eigen::MatrixXd & mujk)
+double DRBM01::expectedValueH(int hindex, double z, Eigen::MatrixXd & mujk)
 {
 	std::vector<int> lindex(this->hSize);
 	std::iota(lindex.begin(), lindex.end(), 0);
@@ -181,9 +174,9 @@ double DRBM::expectedValueH(int hindex, double z, Eigen::MatrixXd & mujk)
 	for (auto k = 0; k < this->ySize; k++) {
 		auto k_val = exp(this->biasY(k));
 		for (auto & l : lindex) {
-			k_val *= cosh(mujk(l, k));
+			k_val *= (1.0 + exp(mujk(l, k)));
 		}
-		k_val *= sinh(mujk(hindex, k));
+		k_val *= exp(mujk(hindex, k));
 		value += k_val;
 	}
 	value = value / z;
@@ -191,15 +184,15 @@ double DRBM::expectedValueH(int hindex, double z, Eigen::MatrixXd & mujk)
 	return value;
 }
 
-double DRBM::expectedValueHY(int hindex, int yindex)
+double DRBM01::expectedValueHY(int hindex, int yindex)
 {
-	auto z = this->normalizeConstantDiv2H();
+	auto z = this->normalizeConstant();
 	auto value = this->expectedValueHY(hindex, yindex, z);
 
 	return value;
 }
 
-double DRBM::expectedValueHY(int hindex, int yindex, double z)
+double DRBM01::expectedValueHY(int hindex, int yindex, double z)
 {
 	std::vector<int> lindex(this->hSize);
 	std::iota(lindex.begin(), lindex.end(), 0);
@@ -209,16 +202,16 @@ double DRBM::expectedValueHY(int hindex, int yindex, double z)
 
 	// FIXME: muJKの計算を他の期待値計算で使いまわせそうだけども…
 	for (auto & l : lindex) {
-		value *= cosh(this->muJK(l, yindex));
+		value *= (1.0 + exp(this->muJK(l, yindex)));
 	}
 
-	value *= sinh(this->muJK(hindex, yindex));
+	value *= exp(this->muJK(hindex, yindex));
 	value = value / z;
 
 	return value;
 }
 
-double DRBM::expectedValueHY(int hindex, int yindex, double z, Eigen::MatrixXd & mujk)
+double DRBM01::expectedValueHY(int hindex, int yindex, double z, Eigen::MatrixXd & mujk)
 {
 	std::vector<int> lindex(this->hSize);
 	std::iota(lindex.begin(), lindex.end(), 0);
@@ -227,29 +220,29 @@ double DRBM::expectedValueHY(int hindex, int yindex, double z, Eigen::MatrixXd &
 	auto value = exp(this->biasY(yindex));
 
 	for (auto & l : lindex) {
-		value *= cosh(mujk(l, yindex));
+		value *= (1.0 + exp(mujk(l, yindex)));
 	}
 
-	value *= sinh(mujk(hindex, yindex));
+	value *= exp(mujk(hindex, yindex));
 	value = value / z;
 
 	return value;
 }
 
-double DRBM::expectedValueY(int yindex)
+double DRBM01::expectedValueY(int yindex)
 {
-	auto z = this->normalizeConstantDiv2H();
+	auto z = this->normalizeConstant();
 	auto value = this->expectedValueY(yindex, z);
 
 	return value;
 }
 
-double DRBM::expectedValueY(int yindex, double z)
+double DRBM01::expectedValueY(int yindex, double z)
 {
 	auto value = exp(this->biasY(yindex));
 	// FIXME: muJKの計算を他の期待値計算で使いまわせそうだけども…
 	for (int j = 0; j < this->hSize; j++) {
-		value *= cosh(this->muJK(j, yindex));
+		value *= (1.0 + (this->muJK(j, yindex)));
 	}
 
 	value = value / z;
@@ -257,11 +250,11 @@ double DRBM::expectedValueY(int yindex, double z)
 	return value;
 }
 
-double DRBM::expectedValueY(int yindex, double z, Eigen::MatrixXd & mujk)
+double DRBM01::expectedValueY(int yindex, double z, Eigen::MatrixXd & mujk)
 {
 	auto value = exp(this->biasY(yindex));
 	for (int j = 0; j < this->hSize; j++) {
-		value *= cosh(mujk(j, yindex));
+		value *= (1.0 + exp(mujk(j, yindex)));
 	}
 
 	value = value / z;

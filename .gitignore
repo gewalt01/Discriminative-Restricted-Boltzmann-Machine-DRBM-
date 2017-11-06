@@ -263,3 +263,11 @@ __pycache__/
 /DRBMExam/DRBMExam/train-images.idx3-ubyte
 /DRBMExam/DRBMExam/t10k-labels.idx1-ubyte
 /DRBMExam/DRBMExam/t10k-images.idx3-ubyte
+/DRBMExam/GeneralizedDRBMExam/train-labels.idx1-ubyte
+/DRBMExam/GeneralizedDRBMExam/train-images.idx3-ubyte
+/DRBMExam/GeneralizedDRBMExam/t10k-labels.idx1-ubyte
+/DRBMExam/GeneralizedDRBMExam/t10k-images.idx3-ubyte
+/DRBMExam/GeneralizedDRBMExam/rate_traindata.txt
+/DRBMExam/GeneralizedDRBMExam/rate_testdata.txt
+/DRBMExam/DRBMExam/rate_traindata.txt
+/DRBMExam/DRBMExam/rate_testdata.txt

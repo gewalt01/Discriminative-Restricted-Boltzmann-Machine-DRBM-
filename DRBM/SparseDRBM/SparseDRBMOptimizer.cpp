@@ -1,30 +1,32 @@
-#include "DRBMOptimizer.h"
-#include "DRBM.h"
+#include "SparseDRBMOptimizer.h"
+#include "SparseDRBM.h"
 
 
-DRBMOptimizer::DRBMOptimizer()
+SparseDRBMOptimizer::SparseDRBMOptimizer()
 {
 }
 
-DRBMOptimizer::DRBMOptimizer(DRBM & drbm)
+SparseDRBMOptimizer::SparseDRBMOptimizer(SparseDRBM & drbm)
 {
 	this->moment1.biasH.setConstant(drbm.hSize, 0.0);
 	this->moment1.biasY.setConstant(drbm.ySize, 0.0);
+	this->moment1.sparseH.setConstant(drbm.hSize, 0.0);
 	this->moment1.weightXH.setConstant(drbm.xSize, drbm.hSize, 0.0);
 	this->moment1.weightHY.setConstant(drbm.hSize, drbm.ySize, 0.0);
 
 	this->moment2.biasH.setConstant(drbm.hSize, 0.0);
 	this->moment2.biasY.setConstant(drbm.ySize, 0.0);
+	this->moment2.sparseH.setConstant(drbm.hSize, 0.0);
 	this->moment2.weightXH.setConstant(drbm.xSize, drbm.hSize, 0.0);
 	this->moment2.weightHY.setConstant(drbm.hSize, drbm.ySize, 0.0);
 }
 
 
-DRBMOptimizer::~DRBMOptimizer()
+SparseDRBMOptimizer::~SparseDRBMOptimizer()
 {
 }
 
-double DRBMOptimizer::deltaBiasH(int hindex, double gradient)
+double SparseDRBMOptimizer::deltaBiasH(int hindex, double gradient)
 {
 	// Adamax
 	auto m = this->moment1.biasH(hindex) = this->beta1 * this->moment1.biasH(hindex) + (1.0 - this->beta1) * gradient;
@@ -34,7 +36,7 @@ double DRBMOptimizer::deltaBiasH(int hindex, double gradient)
 	return delta;
 }
 
-double DRBMOptimizer::deltaBiasY(int yindex, double gradient)
+double SparseDRBMOptimizer::deltaBiasY(int yindex, double gradient)
 {
 	// Adamax
 	auto m = this->moment1.biasY(yindex) = this->beta1 * this->moment1.biasY(yindex) + (1.0 - this->beta1) * gradient;
@@ -44,7 +46,17 @@ double DRBMOptimizer::deltaBiasY(int yindex, double gradient)
 	return delta;
 }
 
-double DRBMOptimizer::deltaWeightXH(int xindex, int hindex, double gradient)
+double SparseDRBMOptimizer::deltaSparseH(int hindex, double gradient)
+{
+	// Adamax
+	auto m = this->moment1.sparseH(hindex) = this->beta1 * this->moment1.sparseH(hindex) + (1.0 - this->beta1) * gradient;
+	auto v = this->moment2.sparseH(hindex) = std::max(this->beta2 * this->moment2.sparseH(hindex), abs(gradient));
+	auto delta = this->alpha / (1.0 - pow(this->beta1, this->iteration)) * m / (v + this->epsilon);
+
+	return delta;
+}
+
+double SparseDRBMOptimizer::deltaWeightXH(int xindex, int hindex, double gradient)
 {
 	// Adamax
 	auto m = this->moment1.weightXH(xindex, hindex) = this->beta1 * this->moment1.weightXH(xindex, hindex) + (1.0 - this->beta1) * gradient;
@@ -54,7 +66,7 @@ double DRBMOptimizer::deltaWeightXH(int xindex, int hindex, double gradient)
 	return delta;
 }
 
-double DRBMOptimizer::deltaWeightHY(int hindex, int yindex, double gradient)
+double SparseDRBMOptimizer::deltaWeightHY(int hindex, int yindex, double gradient)
 {
 	// Adamax
 	auto m = this->moment1.weightHY(hindex, yindex) = this->beta1 * this->moment1.weightHY(hindex, yindex) + (1.0 - this->beta1) * gradient;
