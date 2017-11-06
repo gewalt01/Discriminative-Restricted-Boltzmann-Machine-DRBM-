@@ -1,4 +1,7 @@
-﻿#include "DRBM.h"
+﻿#define EIGEN_NO_DEBUG // コード内のassertを無効化．
+#define EIGEN_DONT_PARALLELIZE // 並列を無効化．
+
+#include "DRBM.h"
 #include "DRBMOptimizer.h"
 #include "DRBMTrainer.h"
 #include "DRBM01.h"
