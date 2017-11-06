@@ -29,8 +29,16 @@ DRBM01::~DRBM01()
 
 double DRBM01::normalizeConstant()
 {
-	auto value = 0.0;
 	auto mu_jk = this->muJKMatrix();
+	auto value = this->normalizeConstant(mu_jk);
+
+	return value;
+}
+
+double DRBM01::normalizeConstant(Eigen::MatrixXd & mujk)
+{
+	auto value = 0.0;
+	auto & mu_jk = mujk;
 	for (int k = 0; k < this->ySize; k++) {
 		auto k_val = exp(this->biasY(k));
 		for (int j = 0; j < this->hSize; j++) {

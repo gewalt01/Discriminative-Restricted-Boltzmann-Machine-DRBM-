@@ -1,4 +1,7 @@
-﻿#include "DRBM01.h"
+﻿#include "DRBM.h"
+#include "DRBMOptimizer.h"
+#include "DRBMTrainer.h"
+#include "DRBM01.h"
 #include "DRBM01Optimizer.h"
 #include "DRBM01Trainer.h"
 #include "mnist.h"
@@ -12,20 +15,63 @@
 #include "Eigen/Core"
 
 struct option {
-	int batchSize  = 1;
+	int drbmType = 0;
+	int batchSize = 1;
 	int hiddenSize = 1;
-	double alpha   = 1.0;
-	int eachCrossVaridation = 1;
+	double alpha = 1.0;
+	int eachCrossVaridation = 500;
 };
 
 struct option config_option_from_cin();
 
+template<class RBM, class TRAINER>
+void run(RBM & drbm, TRAINER & trainer, struct option & opt);
+
 int main(void) {
 	auto opt = config_option_from_cin();
 
+	switch (opt.drbmType) {
+	case 0:  // DRBM{-1, +1}
+		{
+			DRBM drbm(784, opt.hiddenSize, 10);
+			DRBMTrainer trainer(drbm);
+			run(drbm, trainer, opt);
+		}
+		break;
+	case 1:  // DRBM{0. 1}
+		{
+			DRBM01 drbm(784, opt.hiddenSize, 10);
+			DRBM01Trainer trainer(drbm);
+			run(drbm, trainer, opt);
+		}
+		break;
+	}
 
-	DRBM01 drbm(784, opt.hiddenSize, 10);
-	DRBM01Trainer trainer(drbm);
+	return 0;
+}
+
+option config_option_from_cin()
+{
+	struct option opt;
+	std::cout << "DRBM{-1, +1} -> 0" << std::endl;
+	std::cout << "DRBM{0, 1} -> 1" << std::endl;
+	std::cout << "DRBM:";
+	std::cin >> opt.drbmType;
+
+	std::cout << "hidden_size:";
+	std::cin >> opt.hiddenSize;
+
+	std::cout << "batch_size:";
+	std::cin >> opt.batchSize;
+
+	std::cout << "alpha(learning_rate):";
+	std::cin >> opt.alpha;
+
+	return opt;
+}
+
+template <class RBM, class TRAINER>
+void run(RBM & drbm, TRAINER & trainer, struct option & opt) {
 	trainer.optimizer.alpha *= opt.alpha;
 	std::string train_data("train-images.idx3-ubyte"), train_label("train-labels.idx1-ubyte");
 	std::string test_data("t10k-images.idx3-ubyte"), test_label("t10k-labels.idx1-ubyte");
@@ -64,7 +110,7 @@ int main(void) {
 	auto test = [](auto & drbm, auto & dataset, auto & labelset) {
 		double seikai = 0.0;
 		std::vector<int> histgram(10);
-		#pragma omp parallel for
+#pragma omp parallel for
 		for (int n = 0; n < labelset.size(); n++) {
 			auto drbm_replica = drbm;
 			drbm_replica.nodeX = dataset[n];
@@ -78,7 +124,7 @@ int main(void) {
 			std::cout << "histgram[" << i << "]: " << histgram[i] << std::endl;
 		}
 
-		double rate =  seikai / labelset.size();
+		double rate = seikai / labelset.size();
 
 		return rate;
 	};
@@ -124,23 +170,4 @@ int main(void) {
 
 	double rate = test(drbm, dataset_test, mnist_test.labelset);
 	std::cout << "rate: " << rate << std::endl;
-
-
-	getchar();
-	return 0;
-}
-
-option config_option_from_cin()
-{
-	struct option opt;
-	std::cout << "hidden_size:";
-	std::cin >> opt.hiddenSize;
-
-	std::cout << "batch_size:";
-	std::cin >> opt.batchSize;
-
-	std::cout << "alpha(learning_rate):";
-	std::cin >> opt.alpha;
-
-	return opt;
 }

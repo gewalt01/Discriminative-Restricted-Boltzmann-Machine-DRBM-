@@ -36,18 +36,26 @@ double DRBM::normalizeConstant()
 
 double DRBM::normalizeConstantDiv2H()
 {
+	auto mujk = this->muJKMatrix();
+	auto value = this->normalizeConstantDiv2H(mujk);
+
+	return value;
+}
+
+double DRBM::normalizeConstantDiv2H(Eigen::MatrixXd & mujk)
+{
 	auto value = 0.0;
-	auto mu_jk = this->muJKMatrix();
 	for (int k = 0; k < this->ySize; k++) {
 		auto k_val = exp(this->biasY(k));
 		for (int j = 0; j < this->hSize; j++) {
-			k_val *= cosh(mu_jk(j, k));
+			k_val *= cosh(mujk(j, k));
 		}
 		value += k_val;
 	}
 
 	return value;
 }
+
 
 double DRBM::muJK(int hindex, int yindex)
 {

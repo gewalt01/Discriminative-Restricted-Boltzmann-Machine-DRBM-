@@ -21,6 +21,7 @@ public:
 
 	double normalizeConstant();
 	double normalizeConstantDiv2H();
+	double normalizeConstantDiv2H(Eigen::MatrixXd & mujk);
 
 	double muJK(int hindex, int yindex);
 	Eigen::MatrixXd muJKMatrix();

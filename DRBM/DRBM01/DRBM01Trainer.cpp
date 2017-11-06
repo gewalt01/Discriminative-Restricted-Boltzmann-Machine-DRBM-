@@ -39,11 +39,10 @@ void DRBM01Trainer::train(DRBM01 & drbm, std::vector<Eigen::VectorXd> & dataset,
 		drbm_replica.nodeX = data;
 		auto & label = labelset[index];
 
-		auto z = drbm_replica.normalizeConstant();
+		auto mujk = drbm_replica.muJKMatrix();
+		auto z = drbm_replica.normalizeConstant(mujk);
 
 		// Gradient
-		auto mujk = drbm_replica.muJKMatrix();
-
 		for (auto i = 0; i < drbm_replica.xSize; i++) {
 			for (auto j = 0; j < drbm_replica.hSize; j++) {
 				auto gradient = this->dataMeanXH(drbm_replica, data, label, i, j, mujk) - drbm_replica.expectedValueXH(i, j, z, mujk);
