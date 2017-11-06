@@ -46,24 +46,30 @@ void DRBM01Trainer::train(DRBM01 & drbm, std::vector<Eigen::VectorXd> & dataset,
 		for (auto i = 0; i < drbm_replica.xSize; i++) {
 			for (auto j = 0; j < drbm_replica.hSize; j++) {
 				auto gradient = this->dataMeanXH(drbm_replica, data, label, i, j, mujk) - drbm_replica.expectedValueXH(i, j, z, mujk);
-				this->gradient.weightXH(i, j) += gradient * inv_batch_size;
+				this->gradient.weightXH(i, j) += gradient;
 			}
 		}
 		for (auto j = 0; j < drbm_replica.hSize; j++) {
 			auto gradient = this->dataMeanH(drbm_replica, data, label, j, mujk) - drbm_replica.expectedValueH(j, z, mujk);
-			this->gradient.biasH(j) += gradient * inv_batch_size;
+			this->gradient.biasH(j) += gradient;
 		}
 		for (auto j = 0; j < drbm_replica.hSize; j++) {
 			for (auto k = 0; k < drbm_replica.ySize; k++) {
 				auto gradient = this->dataMeanHY(drbm_replica, data, label, j, k, mujk) - drbm_replica.expectedValueHY(j, k, z, mujk);
-				this->gradient.weightHY(j, k) += gradient * inv_batch_size;
+				this->gradient.weightHY(j, k) += gradient;
 			}
 		}
 		for (auto k = 0; k < drbm_replica.ySize; k++) {
 			auto gradient = this->dataMeanY(drbm_replica, data, label, k, mujk) - drbm_replica.expectedValueY(k, z, mujk);
-			this->gradient.biasY(k) += gradient * inv_batch_size;
+			this->gradient.biasY(k) += gradient;
 		}
 	}
+
+	//  * inv_batch_size
+	this->gradient.biasH *= inv_batch_size;
+	this->gradient.biasY *= inv_batch_size;
+	this->gradient.weightXH *= inv_batch_size;
+	this->gradient.weightHY *= inv_batch_size;
 
 	// update
 	for (auto i = 0; i < drbm.xSize; i++) {
